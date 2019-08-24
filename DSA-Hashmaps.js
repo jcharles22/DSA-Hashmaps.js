@@ -1,4 +1,3 @@
-
 class HashMap {
   constructor(initialCapacity = 8) {
     this.length = 0;
@@ -10,20 +9,22 @@ class HashMap {
   get(key) {
     const index = this._findSlot(key);
     if (this._slots[index] === undefined) {
-      throw new Error('Key error');
+      return;
     }
-    return this._slots[index].value;
+    return this._slots[index];
   }
 
   set(key, value) {
-    const loadRatio = (this.length + 1) / this._capacity;
+    const loadRatio = (this.length + this._deleted + 1) / this._capacity;
     if (loadRatio > HashMap.MAX_LOAD_RATIO) {
       this._resize(this._capacity * HashMap.SIZE_RATIO);
     }
 
     const index = this._findSlot(key);
     this._slots[index] = {
-      key, value
+      key,
+      value,
+      deleted: false
     };
     this.length++;
   }
@@ -32,7 +33,7 @@ class HashMap {
     const index = this._findSlot(key);
     const slot = this._slots[index];
     if (slot === undefined) {
-      throw new Error('Key error');
+      throw new Error("Key error");
     }
     slot.deleted = true;
     this.length--;
@@ -56,11 +57,11 @@ class HashMap {
     const oldSlots = this._slots;
     this._capacity = size;
     this.length = 0;
-    this.deleted = 0;
+    this._deleted = 0;
     this._slots = [];
 
     for (const slot of oldSlots) {
-      if (slot !== undefined) {
+      if (slot !== undefined && !slot.deleted) {
         this.set(slot.key, slot.value);
       }
     }
@@ -79,107 +80,98 @@ class HashMap {
 HashMap.MAX_LOAD_RATIO = 0.9;
 HashMap.SIZE_RATIO = 3;
 
-// Palindrome 
-// Write an algorithm to check whether any permutation of a string is a palindrome. Given the string "acecarr", the algorithm should return true, because the letters in "acecarr" can be rearranged to "racecar", which is a palindrome. 
-//In contrast, given the word "north", the algorithm should return false, because there's no way to rearrange those letters to be a palindrome.
-
-
-// The core test of whether a word is a palindrome is:
-// 1: The word reversed is the same as the word forwards
-// 2: If this is true, then there is at most one letter which has an odd number of occurences. 
-// So we will
-
-// Take string in as a parameter. 
-// create a new HashMap
-// in a for loop, loop through each character in the string
-//    each iteration, check to see if the character has already been stored there. if so, increment it's count. If not, store it.
-// initialize a counter variable
-// loop through the hash map using the string as an index, each time that an odd number of occurences is encountered, increase the counter. 
-// if the counter is greater than 1, return false. If equal to or less than one, return true
-
-// Any Permutation a Palindrome 
-function uniqueChars(string) {
-  const chars = [];
-  for (let i = 0; i < string.length; i++) {
-    if (!(chars.includes(string[i]))) {
-      chars.push(string[i]);
-    }
-  }
-  return chars;
-}
-
-function permutationPalindrome(string) {
-  const chars = uniqueChars(string);
-  const palindrome = new HashMap;
-  let count = 0;
-
-  for (let i = 0; i < chars.length; i++) {
-    palindrome.set(chars[i], 0);
-  }
-
-  for (let i = 0; i < string.length; i++) {
-    palindrome.set(string[i], (palindrome.get(string[i]) + 1));
-  }
-
-  for (let i = 0; i < chars.length; i++) {
-    if (palindrome.get(chars[i]) % 2 !== 0) {
-      count++;
-    }
-  }
-
-  console.log(palindrome);
-
-  return count < 2;
-}
-
-// Grouping Anagrams 
-function groupAnagrams(array) {
-  const groupedAnagrams = new HashMap;
-  const uniqueKeys = [];
-  let result = [];
-
-  for (let i = 0; i < array.length; i++) {
-    const lettersSorted = array[i].split('').sort().join('');
-    if (!uniqueKeys.includes(lettersSorted)) {
-      uniqueKeys.push(lettersSorted);
-    }
-    groupedAnagrams.set(lettersSorted, []);
-  }
-
-  for (let i = 0; i < array.length; i++) {
-    const lettersSorted = array[i].split('').sort().join('');
-    groupedAnagrams.get(lettersSorted).push(array[i]);
-  }
-
-  for (let i = 0; i < uniqueKeys.length; i++) {
-    result.push(groupedAnagrams.get(uniqueKeys[i]));
-  }
-
-  return result;
-}
-
 function main() {
-  const lor = new HashMap;
+  const lor = new HashMap();
 
-  lor.set('Hobbit', 'Bilbo');
-  lor.set('Hobbit', 'Frodo');
-  lor.set('Wizard', 'Gandolf');
-  lor.set('Human', 'Aragon');
-  lor.set('Elf', 'Legolas');
-  lor.set('Maiar', 'The Necromancer');
-  lor.set('Maiar', 'Sauron');
-  lor.set('RingBearer', 'Gollum');
-  lor.set('LadyOfLight', 'Galadriel');
-  lor.set('HalfElven', 'Arwen');
-  lor.set('Ent', 'Treebeard');
+  let newItems = [
+    ["Hobbit", "Bilbo"],
+    ["Hobbit", "Frodo"],
+    ["Wizard", "Gandolf"],
+    ["Human", "Aragon"],
+    ["Elf", "Legolas"],
+    ["Maiar", "The Necromancer"],
+    ["Maiar", "Sauron"],
+    ["RingBearer", "Gollum"],
+    ["LadyOfLight", "Galadriel"],
+    ["HalfElven", "Arwen"],
+    ["Ent", "Treebeard"]
+  ];
 
-  // console.log(lor);
-  // console.log(lor.get('Maiar'));
+  function separateChaining(key, value) {
+    if (!lor.get(key)) {
+      lor.set(key, value.toString());
+      return;
+    }
+    if (typeof lor.get(key).value === "string") {
+      lor.set(key, [lor.get(key).value.toString(), value.toString()]);
+      return;
+    } else {
+      lor.set(key, [...lor.get(key.value), value]);
+    }
+    return lor;
+  }
 
-  // console.log(permutationPalindrome('acecarr'));
-  // console.log(permutationPalindrome('racecar'));
+  newItems.forEach(item => separateChaining(item[0], item[1]));
+  console.log(lor.get('Maiar'), lor.get('Hobbit'));
 
-  console.log(groupAnagrams(['east', 'cars', 'acre', 'arcs', 'teas', 'eats', 'race']));
+  function hashPalindrome(str) {
+    for (let i = 0; i < str.length; i++) {
+      let amount = 1;
+      if (lor.get(str[i]) !== undefined) {
+        amount = lor.get(str[i]).value + 1;
+      }
+      lor.set(str[i], amount);
+    }
+    let oddCount = 0;
+    for (let i = 0; i < str.length; i++) {
+      let num = lor.get(str[i]).value;
+      if (num % 2 !== 0) {
+        oddCount = oddCount + 1;
+      }
+    }
+    if (oddCount > 1) {
+      return false;
+    }
+    return true;
+  }
+  //   return hashPalindrome("north");
+
+  function makeAlphabet(str) {
+    let arr = str.split("");
+    let alpha = arr
+      .sort()
+      .join("")
+      .replace(/\s+/g, "");
+    return alpha;
+  }
+
+  function anagramGrouping(arr) {
+    let arrays = [];
+    arr.forEach(item => {
+      let sorted = makeAlphabet(item);
+      if (lor.get(sorted)) {
+        lor.set(sorted, [...lor.get(sorted).value, item.toString()]);
+      }
+      if (!lor.get(sorted)) {
+        lor.set(sorted, [item.toString()]);
+        arrays.push(sorted);
+      }
+    });
+    let solution = [];
+    arrays.forEach(item => {
+      solution.push(lor.get(item).value);
+    });
+    return solution;
+  }
+  //   return anagramGrouping([
+  //     "east",
+  //     "cars",
+  //     "acre",
+  //     "arcs",
+  //     "teas",
+  //     "eats",
+  //     "race"
+  //   ]);
 }
 
-main();
+console.log(main());
